@@ -29,42 +29,30 @@ type Graph interface {
 	Ping() error
 }
 
-// An interface to allow different drivers to have their own unique config structures.
-type Configer interface {
-	// A convenience function to quickly list all the values in the config.
-	LogConfigValues()
-
-	// Returns the name of the driver from the config file
-	GetBackendName() string
-
-	// Initializes the graph with a connection so it can be used.
-	InitializeBackend(Graph) (Graph, error)
-}
-
-var registry = make(map[string]Graph)
+var registry = make(map[string]func(*Config) (Graph, error))
 
 // Adds a driver to the registered backedns.  This driver is not useable until it is pulled with GetBackend
-func RegisterBackend(name string, driver Graph) {
-	registry[name] = driver
+func RegisterBackend(name string, i func(*Config) (Graph, error)) {
+	registry[name] = i
 }
 
 // Pulls a driver from the registered drivers and initializes it with the config information from the config.
-func GetBackend(cfg Configer) (Graph, error) {
+func GetBackend(cfg *Config) (Graph, error) {
 	// pull the driver out of the registered backends
-	graph, ok := registry[cfg.GetBackendName()]
+	factory, ok := registry[(*cfg)["name"].(string)]
 	if !ok {
 		return nil, errors.New(
-			fmt.Sprintf("A backend with the name \"%s\" has not been registered", cfg.GetBackendName()),
+			fmt.Sprintf("A backend with the name \"%s\" has not been registered", (*cfg)["name"].(string)),
 		)
 	}
 
 	// setup the driver with all the connections it will need to be useful.
-	graph, err := cfg.InitializeBackend(graph)
+	graph, err := factory(cfg)
 	if err != nil {
 		return nil, errors.New(
 			fmt.Sprintf("Failed to initialize with error message %s", err.Error()),
 		)
 	}
 
-	return graph, nil
+	return graph, err
 }

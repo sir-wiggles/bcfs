@@ -3,19 +3,18 @@ package main
 import (
 	"flag"
 
-	"program/backend"
+	"bcfs/backend"
 
 	// Load all the knows drivers.  These drivers get registered in their init method call.
-//	"program/drivers/ddb"
-	"program/drivers/neo"
+	//	"program/drivers/ddb"
+	_ "bcfs/drivers/neo"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/fogcreek/mini"
 )
 
-
 type FilesystemConfig struct {
-	BackendConfig backend.Configer
+	BackendConfig *backend.Config
 	LogLevel      log.Level
 }
 
@@ -44,20 +43,16 @@ func handleConfig(configFilename *string) (*FilesystemConfig, error) {
 
 	// Get all the specific driver configuration from the config and populate the appropriate driver config,
 	// that's based on the backend name.
-	var backendConfig backend.Configer
+	var backendConfig *backend.Config
 	switch backendName {
 	case "neo":
-		backendConfig = &neo.Config{
-			User:     cfg.StringFromSection(backendName, "user", ""),
-			Password: cfg.StringFromSection(backendName, "password", ""),
-			Host:     cfg.StringFromSection(backendName, "host", ""),
-			Port:     cfg.IntegerFromSection(backendName, "port", 7474),
+		backendConfig = &backend.Config{
+			"name":     "neo",
+			"user":     cfg.StringFromSection(backendName, "user", ""),
+			"password": cfg.StringFromSection(backendName, "password", ""),
+			"host":     cfg.StringFromSection(backendName, "host", ""),
+			"port":     cfg.IntegerFromSection(backendName, "port", 7474),
 		}
-//	case "ddb":
-//		backendConfig = &ddb.Config{
-//			Key:    cfg.StringFromSection(backendName, "key", ""),
-//			Secret: cfg.StringFromSection(backendName, "secret", ""),
-//		}
 	}
 
 	fcfg := &FilesystemConfig{
@@ -81,7 +76,7 @@ func main() {
 
 	driver, err := backend.GetBackend(cfg.BackendConfig)
 	if err != nil {
-		log.Errorf(err.Error())
+		log.Fatalf(err.Error())
 	}
 	log.Debug(driver.Ping())
 }
