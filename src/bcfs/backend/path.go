@@ -1,3 +1,3 @@
 package backend
 
-type Path struct{}
+type Path map[id]map[id]properties

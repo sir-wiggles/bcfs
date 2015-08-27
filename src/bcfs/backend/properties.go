@@ -4,6 +4,9 @@ import (
 	"fmt"
 )
 
+// representation of a node id which is a 32 hex char string
+type id string
+
 // The key value struct for nodes
 type properties map[string]interface{}
 

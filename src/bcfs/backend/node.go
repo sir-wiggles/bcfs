@@ -1,4 +1,3 @@
 package backend
 
-type Nodes []Node
-type Node map[id]properties
+type Nodes map[id]properties

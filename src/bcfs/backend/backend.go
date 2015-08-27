@@ -7,27 +7,23 @@ import (
 
 // This is the interface that will interact with the actual backend.
 type Graph interface {
-	GetNodes(nodes []*Nodes) (*Nodes, error)
-	GetEdges(edges []*Edges) (*Edges, error)
+	GetNodes(*Nodes) (*Nodes, error)
+	GetEdges(*Edges) (*Edges, error)
+
+	CreateNodes(*Nodes) error
+	CreateEdges(*Edges) error
+
+	AlterNodes(*Nodes) error
+	AlterEdges(*Edges) error
+
+	DeleteNodes(*Nodes) error
+	DeleteEdges(*Edges) error
+
+	GetPath(*Nodes) (*Path, error)
 
 	GetConnection() (*Connection, error)
-
-	CreateNodes(nodes []*Nodes) error
-	CreateEdges(edges []*Edges) error
-
-	AlterNodes(nodes []*Nodes) error
-	AlterEdges(edges []*Edges) error
-
-	DeleteNodes(nodes []*Nodes) error
-	DeleteEdges(edges []*Edges) error
-
-	GetPath(nodes []*Nodes) (*Path, error)
-
 	Ping() error
 }
-
-// representation of a node id which is a 32 hex char string
-type id string
 
 // all drivers will have this type of function that will be registered to be used in creating a new driver
 type DriverInitializer func(*Config) (Graph, error)

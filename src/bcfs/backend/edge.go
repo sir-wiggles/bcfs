@@ -1,4 +1,3 @@
 package backend
 
-type Edges []Edge
-type Edge map[id]properties
+type Edges map[id]properties
