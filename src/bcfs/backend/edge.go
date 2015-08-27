@@ -1,3 +1,4 @@
 package backend
 
-type Edges struct{}
+type Edges []Edge
+type Edge map[id]properties

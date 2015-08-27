@@ -9,7 +9,7 @@ import (
 )
 
 var (
-    PACKAGE_NAME = "neo"
+	PACKAGE_NAME = "neo"
 )
 
 // will register this package as a knows backend
@@ -49,38 +49,38 @@ func (d *Driver) GetConnection() (*backend.Connection, error) {
 }
 
 // Given a list of node ids return all the nodes and their properties
-func (d *Driver) GetNodes(sid string, nids []string) (*backend.Nodes, error) {
+func (d *Driver) GetNodes(nodes []*backend.Nodes) (*backend.Nodes, error) {
 	return nil, nil
 }
 
-func (d *Driver) GetEdges(sid string, nids []string) (*backend.Edges, error) {
+func (d *Driver) GetEdges(edges []*backend.Edges) (*backend.Edges, error) {
 	return nil, nil
 }
 
-func (d *Driver) PutNodes() error {
+func (d *Driver) CreateNodes(nodes []*backend.Nodes) error {
 	return nil
 }
 
-func (d *Driver) PutEdges() error {
+func (d *Driver) CreateEdges(edges []*backend.Edges) error {
 	return nil
 }
 
-func (d *Driver) PostNodes() error {
+func (d *Driver) AlterNodes(nodes []*backend.Nodes) error {
 	return nil
 }
 
-func (d *Driver) PostEdges() error {
+func (d *Driver) AlterEdges(edges []*backend.Edges) error {
 	return nil
 }
 
-func (d *Driver) DeleteNodes() error {
+func (d *Driver) DeleteNodes(nodes []*backend.Nodes) error {
 	return nil
 }
 
-func (d *Driver) DeleteEdges() error {
+func (d *Driver) DeleteEdges(edges []*backend.Edges) error {
 	return nil
 }
 
-func (d *Driver) GetPath(sid string, nids []string) (*backend.Path, error) {
+func (d *Driver) GetPath(nodes []*backend.Nodes) (*backend.Path, error) {
 	return nil, nil
 }

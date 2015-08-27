@@ -1,3 +1,4 @@
 package backend
 
-type Nodes struct{}
+type Nodes []Node
+type Node map[id]properties
