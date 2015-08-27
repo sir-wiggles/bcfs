@@ -5,6 +5,7 @@ import "fmt"
 // An interface to allow different drivers to have their own unique config.
 type Config map[string]interface{}
 
+// helper function to extract a string from the config
 func (c Config) StringKey(key string) string {
 	if val, ok := c[key]; ok {
 		switch vv := val.(type) {
@@ -17,6 +18,7 @@ func (c Config) StringKey(key string) string {
 	panic(fmt.Errorf("No such key: %s", key))
 }
 
+// helper function to extract an int from the config
 func (c Config) IntKey(key string) int {
 	if val, ok := c[key]; ok {
 		switch vv := val.(type) {

@@ -1,3 +1,3 @@
 package backend
 
-type Edge struct{}
+type Edges struct{}

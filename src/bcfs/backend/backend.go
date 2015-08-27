@@ -7,24 +7,21 @@ import (
 
 // This is the interface that will interact with the actual backend.
 type Graph interface {
-	// Given a list of node ids and a source id, return all the nodes requested or error
-	// This is useful for getting all nodes under a parent.
 	GetNodes(sid string, nids []string) (*Nodes, error)
+	GetEdges(sid string, nids []string) (*Edges, error)
 
-	//	// Return all the edges between sets of nodes
-	//	GetEdges(sid string, nids []string) (Edge, error)
-	//
-	//	// Gets a connection for the connection pool
-	//	GetConnection() (Connection, error)
-	//
-	//	// Creates nodes
-	//	PutNodes() error
-	//	PutEdges() error
-	//
-	//	DeleteNodes() error
-	//	DeleteEdges() error
-	//
-	//	GetPath(sid string, nids []string) (Path, error)
+	GetConnection() (*Connection, error)
+
+	PutNodes() error
+	PutEdges() error
+
+	PostNodes() error
+	PostEdges() error
+
+	DeleteNodes() error
+	DeleteEdges() error
+
+	GetPath(sid string, nids []string) (*Path, error)
 
 	Ping() error
 }
@@ -39,10 +36,10 @@ func RegisterBackend(name string, i func(*Config) (Graph, error)) {
 // Pulls a driver from the registered drivers and initializes it with the config information from the config.
 func GetBackend(cfg *Config) (Graph, error) {
 	// pull the driver out of the registered backends
-	factory, ok := registry[(*cfg)["name"].(string)]
+	factory, ok := registry[cfg.StringKey("name")]
 	if !ok {
 		return nil, errors.New(
-			fmt.Sprintf("A backend with the name \"%s\" has not been registered", (*cfg)["name"].(string)),
+			fmt.Sprintf("A backend with the name \"%s\" has not been registered", cfg.StringKey("name")),
 		)
 	}
 

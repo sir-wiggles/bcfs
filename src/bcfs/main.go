@@ -1,5 +1,15 @@
 package main
 
+/*
+This is the filesystem as a microservice. It is an interface between bc_paas and the true backend (ddb, neo4j, ...)
+
+Once main is has started, the imported libraries from drivers will have their init functions called and a newDriver
+function will be added to the registry map in backend.backend.
+
+Once everything is setup, calling GetBackend and passing in backend.Config will initialize the connections to the DB
+returning a graph that you can call the interface methods on.
+*/
+
 import (
 	"flag"
 
@@ -13,6 +23,7 @@ import (
 	"github.com/fogcreek/mini"
 )
 
+// A generic config that holds configuration options for the backend
 type FilesystemConfig struct {
 	BackendConfig *backend.Config
 	LogLevel      log.Level
@@ -52,6 +63,10 @@ func handleConfig(configFilename *string) (*FilesystemConfig, error) {
 			"password": cfg.StringFromSection(backendName, "password", ""),
 			"host":     cfg.StringFromSection(backendName, "host", ""),
 			"port":     cfg.IntegerFromSection(backendName, "port", 7474),
+		}
+	case "ddb":
+		backendConfig = &backend.Config{
+		// where ddb config options would go
 		}
 	}
 
