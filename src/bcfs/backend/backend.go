@@ -26,10 +26,13 @@ type Graph interface {
 	Ping() error
 }
 
-var registry = make(map[string]func(*Config) (Graph, error))
+// all drivers will have this type of function that will be registered to be used in creating a new driver
+type DriverInitializer func(*Config) (Graph, error)
+
+var registry = make(map[string]DriverInitializer)
 
 // Adds a driver to the registered backedns.  This driver is not useable until it is pulled with GetBackend
-func RegisterBackend(name string, i func(*Config) (Graph, error)) {
+func RegisterBackend(name string, i DriverInitializer) {
 	registry[name] = i
 }
 
