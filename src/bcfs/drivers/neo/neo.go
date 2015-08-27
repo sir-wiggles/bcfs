@@ -8,6 +8,7 @@ import (
 	_ "gopkg.in/cq.v1"
 )
 
+// Constants for the package
 var (
 	PACKAGE_NAME = "neo"
 )
