@@ -39,15 +39,8 @@ func newDriver(c *backend.Config) (backend.Graph, error) {
 	}, err
 }
 
-// tests the DB connection
-func (d *Driver) Ping() error {
-	return d.Connection.Ping()
-}
 
-func (d *Driver) GetConnection() (*backend.Connection, error) {
-	return nil, nil
-}
-
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 // Given a list of node ids return all the nodes and their properties
 func (d *Driver) GetNodes(nodes []*backend.Nodes) (*backend.Nodes, error) {
 	return nil, nil
@@ -57,6 +50,7 @@ func (d *Driver) GetEdges(edges []*backend.Edges) (*backend.Edges, error) {
 	return nil, nil
 }
 
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 func (d *Driver) CreateNodes(nodes []*backend.Nodes) error {
 	return nil
 }
@@ -65,6 +59,7 @@ func (d *Driver) CreateEdges(edges []*backend.Edges) error {
 	return nil
 }
 
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 func (d *Driver) AlterNodes(nodes []*backend.Nodes) error {
 	return nil
 }
@@ -73,6 +68,7 @@ func (d *Driver) AlterEdges(edges []*backend.Edges) error {
 	return nil
 }
 
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 func (d *Driver) DeleteNodes(nodes []*backend.Nodes) error {
 	return nil
 }
@@ -81,6 +77,16 @@ func (d *Driver) DeleteEdges(edges []*backend.Edges) error {
 	return nil
 }
 
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 func (d *Driver) GetPath(nodes []*backend.Nodes) (*backend.Path, error) {
 	return nil, nil
+}
+
+func (d *Driver) GetConnection() (*backend.Connection, error) {
+    return nil, nil
+}
+
+// Test the connection to the DB. Returns error if failed to communicate. Usually due to a connection error.
+func (d *Driver) Ping() error {
+    return d.Connection.Ping()
 }
