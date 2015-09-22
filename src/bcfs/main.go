@@ -2,8 +2,10 @@ package main
 
 /*
 This is the filesystem as a microservice. It is an interface between bc_paas and the true backend (ddb, neo4j, ...)
+The idea here is that the filesystem layer will remain static while the driver is the code that would potentially 
+change in talking to different backends. 
 
-Once main is has started, the imported libraries from drivers will have their init functions called and a newDriver
+Once main has started, the imported libraries from drivers will have their init functions called and a newDriver
 function will be added to the registry map in backend.backend.
 
 Once everything is setup, calling GetBackend and passing in backend.Config will initialize the connections to the DB
