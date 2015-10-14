@@ -10,7 +10,7 @@ type Graph interface {
 	GetNodes(*Nodes) (*Nodes, error)
 	GetEdges(*Edges) (*Edges, error)
 
-	CreateNodes(*Nodes) error
+	CreateNodes(*Nodes) (*Nodes, error)
 	CreateEdges(*Edges) error
 
 	AlterNodes(*Nodes) error

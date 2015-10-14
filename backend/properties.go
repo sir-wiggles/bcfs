@@ -8,10 +8,10 @@ import (
 type id string
 
 // The key value struct for nodes
-type properties map[string]interface{}
+type Properties map[string]interface{}
 
 // helper method to get a string out of properties
-func (p properties) StringKey(key string) (string, error) {
+func (p Properties) StringKey(key string) (string, error) {
 	if val, ok := p[key]; ok {
 		switch vv := val.(type) {
 		case string:
@@ -24,7 +24,7 @@ func (p properties) StringKey(key string) (string, error) {
 }
 
 // helper method to get an int out of properties
-func (p properties) IntKey(key string) (int, error) {
+func (p Properties) IntKey(key string) (int, error) {
 	if val, ok := p[key]; ok {
 		switch vv := val.(type) {
 		case int64:
