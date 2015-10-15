@@ -14,7 +14,7 @@ var (
 	PackageName = "neo"
 )
 
-// will register this package as a knows backend
+// will register this package as a know backend
 func init() {
 	log.Infof("Registering %s as a backend", PackageName)
 	backend.RegisterBackend(PackageName, newDriver)
@@ -97,10 +97,8 @@ func (d *Driver) GetNodes(nodes *backend.Nodes) (*backend.Nodes, error) {
 	return &bn, nil
 }
 
-func (d *Driver) GetEdges(edges *backend.Edges) (*backend.Edges, error) {
-	return nil, nil
-}
-
+// CreateNodes will create a node in the graph and return the newly created node
+// If the node already exists, then the existing node will remain unchanged
 func (d *Driver) CreateNodes(nodes *backend.Nodes) (*backend.Nodes, error) {
 
 	statements := make([]*neoism.CypherQuery, 0, len(*nodes))
@@ -164,11 +162,9 @@ func (d *Driver) CreateNodes(nodes *backend.Nodes) (*backend.Nodes, error) {
 	return &bn, nil
 }
 
-func (d *Driver) CreateEdges(edges *backend.Edges) error {
-	return nil
-}
-
-func (d *Driver) AlterNodes(nodes *backend.Nodes) (backend.Nodes, error) {
+// AlterNodes will update the specified node with the parameters given.  If
+// no node was found then nothing will happen and a null node will be returned.
+func (d *Driver) AlterNodes(nodes *backend.Nodes) (*backend.Nodes, error) {
 	statements := make([]*neoism.CypherQuery, 0, len(*nodes))
 	responses := make([]*[]neoResponse, 0, len(*nodes))
 	createQuery := `MATCH (n:` + "`%s`" + ` %s)
@@ -227,10 +223,8 @@ func (d *Driver) AlterNodes(nodes *backend.Nodes) (backend.Nodes, error) {
 	return &bn, nil
 }
 
-func (d *Driver) AlterEdges(edges *backend.Edges) error {
-	return nil
-}
-
+// DeleteNodes will delete the given nodes from the graph. All relationships
+// must be deleted before nodes can be deleted.
 func (d *Driver) DeleteNodes(nodes *backend.Nodes) error {
 
 	statements := make([]*neoism.CypherQuery, 0, len(*nodes))
@@ -258,6 +252,18 @@ func (d *Driver) DeleteNodes(nodes *backend.Nodes) error {
 		return err
 	}
 
+	return nil
+}
+
+func (d *Driver) GetEdges(edges *backend.Edges) (*backend.Edges, error) {
+	return nil, nil
+}
+
+func (d *Driver) CreateEdges(edges *backend.Edges) (*backend.Edges, error) {
+	return nil
+}
+
+func (d *Driver) AlterEdges(edges *backend.Edges) (*backend.Edges, error) {
 	return nil
 }
 

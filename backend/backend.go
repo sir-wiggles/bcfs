@@ -13,7 +13,7 @@ type Graph interface {
 	CreateNodes(*Nodes) (*Nodes, error)
 	CreateEdges(*Edges) error
 
-	AlterNodes(*Nodes) error
+	AlterNodes(*Nodes) (*Nodes, error)
 	AlterEdges(*Edges) error
 
 	DeleteNodes(*Nodes) error

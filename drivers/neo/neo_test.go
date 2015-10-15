@@ -8,7 +8,7 @@ import (
 	"github.com/sir-wiggles/bcfs/backend"
 )
 
-var url string = "http://neo4j:asdf@localhost:7474/"
+var url = "http://neo4j:asdf@localhost:7474/"
 
 func init() {
 	log.SetLevel(log.DebugLevel)
@@ -33,6 +33,7 @@ func addNodesToGraph(db *neoism.Database) error {
 	delr := &neoism.CypherQuery{
 		Statement: "MATCH ()-[r]-() DELETE r;",
 	}
+
 	deln := &neoism.CypherQuery{
 		Statement: "MATCH (n) DELETE n;",
 	}
@@ -55,34 +56,11 @@ func addNodesToGraph(db *neoism.Database) error {
 			RETURN root;`,
 	}
 
-	cleanup := make([]*neoism.CypherQuery, 0, 2)
+	cleanup := make([]*neoism.CypherQuery, 0, 3)
 	cleanup = append(cleanup, delr)
 	cleanup = append(cleanup, deln)
+	cleanup = append(cleanup, fs)
 	tx, err := db.Begin(cleanup)
-	if err != nil {
-		log.Debug(err.Error())
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		log.Debug(err.Error())
-		return err
-	}
-
-	statements := make([]*neoism.CypherQuery, 0, 4)
-	for i, nid := range []string{"abc", "123", "bar", "foo"} {
-		stmt := &neoism.CypherQuery{
-			Statement: "MERGE (:`test-source-id`:Node {nid:{nid}, date_created:{dc}})",
-			Parameters: neoism.Props{
-				"nid": nid,
-				"dc":  i,
-			},
-		}
-		statements = append(statements, stmt)
-	}
-
-	tx, err = db.Begin(statements)
 	if err != nil {
 		log.Debug(err.Error())
 		return err
