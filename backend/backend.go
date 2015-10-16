@@ -11,10 +11,10 @@ type Graph interface {
 	GetEdges(*Edges) (*Edges, error)
 
 	CreateNodes(*Nodes) (*Nodes, error)
-	CreateEdges(*Edges) error
+	CreateEdges(*Edges) (*Edges, error)
 
 	AlterNodes(*Nodes) (*Nodes, error)
-	AlterEdges(*Edges) error
+	AlterEdges(*Edges) (*Edges, error)
 
 	DeleteNodes(*Nodes) error
 	DeleteEdges(*Edges) error

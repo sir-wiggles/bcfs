@@ -87,6 +87,9 @@ func (d *Driver) GetNodes(nodes *backend.Nodes) (*backend.Nodes, error) {
 	// Translate the nodes into a valid backend node
 	bn := make(backend.Nodes, len(*nodes))
 	for _, r := range responses {
+		if len(*r) == 0 {
+			continue
+		}
 		resp := (*r)[0].Data
 		if resp == nil {
 			continue
@@ -103,32 +106,36 @@ func (d *Driver) CreateNodes(nodes *backend.Nodes) (*backend.Nodes, error) {
 
 	statements := make([]*neoism.CypherQuery, 0, len(*nodes))
 	responses := make([]*[]neoResponse, 0, len(*nodes))
-	createQuery := `MERGE (n:` + "`%s`" + ` %s)
-	ON CREATE SET n.__created__ = true
+	createQuery := `MERGE (n:` + "`%s`" + ` {nid:'%s'})
+	ON CREATE SET n.__created__ = true, %s
 	WITH n, n.__created__ as created
 	REMOVE n.__created__
 	RETURN n, created;`
-	for _, properties := range *nodes {
-
-		buffer := bytes.NewBufferString("{")
+	for nid, properties := range *nodes {
+		buffer := bytes.NewBufferString("")
 		for k, v := range properties {
+			// nid is the index and should never be altered
+			if k == "nid" {
+				nid = v.(string)
+				continue
+			}
 			switch v.(type) {
-			case int:
-				buffer.WriteString(fmt.Sprintf("%s:%d", k, v))
+			case int, int32, int64, float32, float64:
+				buffer.WriteString(fmt.Sprintf("n.%s=%d", k, v))
 			case string:
-				buffer.WriteString(fmt.Sprintf("%s:'%s'", k, v))
+				buffer.WriteString(fmt.Sprintf("n.%s='%s'", k, v))
 			}
 			buffer.WriteString(",")
 		}
 		buffer.Truncate(buffer.Len() - 1)
-		buffer.WriteString("}")
+		buffer.WriteString("")
 
 		// Each statment will get a res struct to house the returned node from Neo
 		r := &[]neoResponse{}
 		q := &neoism.CypherQuery{
 			// we need the back ticks for the label because some may start with a number
 			// and cypher requires that we back tick those.
-			Statement: fmt.Sprintf(createQuery, d.sid, buffer.String()),
+			Statement: fmt.Sprintf(createQuery, d.sid, nid, buffer.String()),
 			Result:    r,
 		}
 
@@ -167,18 +174,21 @@ func (d *Driver) CreateNodes(nodes *backend.Nodes) (*backend.Nodes, error) {
 func (d *Driver) AlterNodes(nodes *backend.Nodes) (*backend.Nodes, error) {
 	statements := make([]*neoism.CypherQuery, 0, len(*nodes))
 	responses := make([]*[]neoResponse, 0, len(*nodes))
-	createQuery := `MATCH (n:` + "`%s`" + ` %s)
+	createQuery := `MATCH (n:` + "`%s`" + ` {nid:'%s'})
 	SET %s
-	RETURN n, created;`
-	for _, properties := range *nodes {
-
+	RETURN n;`
+	for nid, properties := range *nodes {
 		buffer := bytes.NewBufferString("")
 		for k, v := range properties {
+			if k == "nid" {
+				nid = v.(string)
+				continue
+			}
 			switch v.(type) {
-			case int:
-				buffer.WriteString(fmt.Sprintf("n.%s=%d,", k, v))
+			case int, int32, int64, float32, float64:
+				buffer.WriteString(fmt.Sprintf("n.%s=%d", k, v))
 			case string:
-				buffer.WriteString(fmt.Sprintf("n.%s='%s',", k, v))
+				buffer.WriteString(fmt.Sprintf("n.%s='%s'", k, v))
 			}
 			buffer.WriteString(",")
 		}
@@ -189,7 +199,7 @@ func (d *Driver) AlterNodes(nodes *backend.Nodes) (*backend.Nodes, error) {
 		q := &neoism.CypherQuery{
 			// we need the back ticks for the label because some may start with a number
 			// and cypher requires that we back tick those.
-			Statement: fmt.Sprintf(createQuery, d.sid, buffer.String()),
+			Statement: fmt.Sprintf(createQuery, d.sid, nid, buffer.String()),
 			Result:    r,
 		}
 
@@ -260,11 +270,11 @@ func (d *Driver) GetEdges(edges *backend.Edges) (*backend.Edges, error) {
 }
 
 func (d *Driver) CreateEdges(edges *backend.Edges) (*backend.Edges, error) {
-	return nil
+	return nil, nil
 }
 
 func (d *Driver) AlterEdges(edges *backend.Edges) (*backend.Edges, error) {
-	return nil
+	return nil, nil
 }
 
 func (d *Driver) DeleteEdges(edges *backend.Edges) error {

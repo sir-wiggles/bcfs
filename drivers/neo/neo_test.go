@@ -2,6 +2,7 @@ package neo
 
 import (
 	"testing"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/jmcvetta/neoism"
@@ -14,20 +15,14 @@ func init() {
 	log.SetLevel(log.DebugLevel)
 }
 
-func addNodesToGraph(db *neoism.Database) error {
-	// A unique constraint on a node's nid
+func setup() (*neoism.Database, error) {
 
-	constraint := &neoism.CypherQuery{
-		Statement: "CREATE CONSTRAINT ON (node:`test-source-id`) ASSERT node.nid IS UNIQUE",
-	}
-	err := db.Cypher(constraint)
-	constraint = &neoism.CypherQuery{
-		Statement: "CREATE CONSTRAINT ON (node:Node) ASSERT node.nid IS UNIQUE",
-	}
-	err = db.Cypher(constraint)
+	db, err := neoism.Connect(url)
 	if err != nil {
-		log.Debug(err.Error())
-		return err
+		return nil, err
+	}
+	constraint2 := &neoism.CypherQuery{
+		Statement: "CREATE CONSTRAINT ON (node:Node) ASSERT node.nid IS UNIQUE",
 	}
 
 	delr := &neoism.CypherQuery{
@@ -40,13 +35,13 @@ func addNodesToGraph(db *neoism.Database) error {
 
 	fs := &neoism.CypherQuery{
 		Statement: `CREATE
-			(root:test-source-id {nid: 'root'}),
-			(d1:test-source-id {nid: 'd1'}),
-			(d2:test-source-id {nid: 'd2'}),
-			(d3:test-source-id {nid: 'd3'}),
-			(f01:test-source-id {nid:'f0.1'}),
-			(f11:test-source-id {nid:'f1.1'}),
-			(f21:test-source-id {nid:'f2.1'}),
+			(root:Node {nid: 'root'}),
+			(d1:Node {nid: 'd1'}),
+			(d2:Node {nid: 'd2'}),
+			(d3:Node {nid: 'd3'}),
+			(f01:Node {nid:'f0.1'}),
+			(f11:Node {nid:'f1.1'}),
+			(f21:Node {nid:'f2.1'}),
 			root-[:ROOT]->f01,
 			root-[:ROOT]->d1,
 			root-[:ROOT]->d2,
@@ -56,162 +51,318 @@ func addNodesToGraph(db *neoism.Database) error {
 			RETURN root;`,
 	}
 
-	cleanup := make([]*neoism.CypherQuery, 0, 3)
-	cleanup = append(cleanup, delr)
-	cleanup = append(cleanup, deln)
-	cleanup = append(cleanup, fs)
-	tx, err := db.Begin(cleanup)
+	err = db.Cypher(constraint2)
+	err = db.Cypher(delr)
+	err = db.Cypher(deln)
+	err = db.Cypher(fs)
 	if err != nil {
 		log.Debug(err.Error())
-		return err
+		return nil, err
 	}
-
-	err = tx.Commit()
-	if err != nil {
-		log.Debug(err.Error())
-		return err
-	}
-	return nil
+	return db, nil
 }
 
 func Test_GetNodes(t *testing.T) {
 
-	db, err := neoism.Connect(url)
-	if err != nil {
-		t.Error("here", err.Error())
-	}
-	err = addNodesToGraph(db)
+	db, err := setup()
 	if err != nil {
 		t.Errorf(err.Error())
-	}
-	driver := Driver{
-		Connection: db,
-		sid:        "test-source-id",
+		t.FailNow()
 	}
 
-	nodesToGet := backend.Nodes{
-		"abc": nil,
-		"123": nil,
-		"bar": nil,
-		"foo": nil,
+	tests := map[string]map[string]interface{}{
+		"One node query": map[string]interface{}{
+			"query": backend.Nodes{
+				"f0.1": nil,
+			},
+			"check":  1,
+			"expect": "One node query. One node should be returned.",
+			"driver": Driver{
+				Connection: db,
+				sid:        "Node",
+			},
+		},
+		"Two node query": map[string]interface{}{
+			"query": backend.Nodes{
+				"f0.1": nil,
+				"f1.1": nil,
+			},
+			"check":  2,
+			"expect": "Two node query. Two nodes should be returned.",
+			"driver": Driver{
+				Connection: db,
+				sid:        "Node",
+			},
+		},
+		"One non existent node query": map[string]interface{}{
+			"query": backend.Nodes{
+				"fnil": nil,
+			},
+			"check":  0,
+			"expect": "One node query where node doesn't exist. Nothing should be returned.",
+			"driver": Driver{
+				Connection: db,
+				sid:        "Node",
+			},
+		},
+		"Two node query one non existant": map[string]interface{}{
+			"query": backend.Nodes{
+				"f0.1": nil,
+				"fnil": nil,
+			},
+			"check":  1,
+			"expect": "Two node query where one node doesn't exist. Should only have one node returned",
+			"driver": Driver{
+				Connection: db,
+				sid:        "Node",
+			},
+		},
+		"Invalid source id": map[string]interface{}{
+			"query": backend.Nodes{
+				"f0.1": nil,
+			},
+			"check":  0,
+			"expect": "Invalid source id given, no nodes should be returned.",
+			"driver": Driver{
+				Connection: db,
+				sid:        "invalid",
+			},
+		},
 	}
 
-	nodes, err := driver.GetNodes(&nodesToGet)
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
-	t.Logf("%#v", nodes)
-	if len(*nodes) != len(nodesToGet) {
-		t.Errorf("Expected %d nodes got %d", len(nodesToGet), len(*nodes))
-		t.Fail()
+	for testName, test := range tests {
+		driver := test["driver"].(Driver)
+		query := test["query"].(backend.Nodes)
+		check := test["check"].(int)
+		nodes, err := driver.GetNodes(&query)
+		if err != nil {
+			t.Errorf("%s %s", testName, err.Error())
+			continue
+		}
+		if len(*nodes) != check {
+			t.Errorf("%s", test["expect"].(string))
+		}
 	}
 }
 
 func Test_DeleteNodes(t *testing.T) {
 
-	db, err := neoism.Connect(url)
+	db, err := setup()
+
+	res := []struct {
+		Count int `json:"count"`
+	}{}
+	err = db.Cypher(&neoism.CypherQuery{
+		Statement: "MATCH (n) RETURN count(n) as count;",
+		Result:    &res,
+	})
+
 	if err != nil {
-		t.Error(err.Error())
+		t.Errorf("Failed to get initial count of all nodes in DB %s", err.Error())
+		t.FailNow()
+	}
+	dbNodeCount := res[0].Count
+
+	tests := map[string]map[string]interface{}{
+		"delete one node": {
+			"query": backend.Nodes{
+				"d1": nil,
+			},
+			"delta":    -1,
+			"expected": "Expected one node to be deleted.",
+			"driver": Driver{
+				Connection: db,
+				sid:        "Node",
+			},
+		},
+		"delete two nodes": {
+			"query": backend.Nodes{
+				"f0.1": nil,
+				"f1.1": nil,
+			},
+			"delta":    -2,
+			"expected": "Expected two nodes to be deleted.",
+			"driver": Driver{
+				Connection: db,
+				sid:        "Node",
+			},
+		},
+		"delete one node non existant": {
+			"query": backend.Nodes{
+				"fnil": nil,
+			},
+			"delta":    0,
+			"expected": "Node doesn't exist, shouldn't be deleted.",
+			"driver": Driver{
+				Connection: db,
+				sid:        "Node",
+			},
+		},
+		"delete two nodes one non existant": {
+			"query": backend.Nodes{
+				"fnil": nil,
+				"f2.1": nil,
+			},
+			"delta":    -1,
+			"expected": "Should only delete one node.",
+			"driver": Driver{
+				Connection: db,
+				sid:        "Node",
+			},
+		},
 	}
 
-	err = addNodesToGraph(db)
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-	driver := Driver{
-		Connection: db,
-		sid:        "test-source-id",
-	}
+	// with neo you can't delete a node that sill has relationships.
+	err = db.Cypher(&neoism.CypherQuery{
+		Statement: "MATCH ()-[r]-() DELETE r;",
+		Result:    &res,
+	})
 
-	nodesToDel := backend.Nodes{
-		"abc": nil,
-		"123": nil,
-		"bar": nil,
-		"foo": nil,
-	}
+	for testName, test := range tests {
+		query := test["query"].(backend.Nodes)
+		delta := test["delta"].(int)
+		driver := test["driver"].(Driver)
+		err = driver.DeleteNodes(&query)
+		if err != nil {
+			t.Errorf("%s %s", testName, err.Error())
+			continue
+		}
 
-	err = driver.DeleteNodes(&nodesToDel)
-	if err != nil {
-		t.Error(err.Error())
+		res := []struct {
+			Count int `json:"count"`
+		}{}
+		err = db.Cypher(&neoism.CypherQuery{
+			Statement: "MATCH (n) RETURN count(n) as count;",
+			Result:    &res,
+		})
+		if dbNodeCount+delta != res[0].Count {
+			t.Errorf("%s", test["expected"].(string))
+			t.FailNow()
+		}
+		dbNodeCount = res[0].Count
 	}
 }
 
 func Test_CreateNodes(t *testing.T) {
 
-	db, err := neoism.Connect(url)
+	db, err := setup()
 	if err != nil {
 		t.Error(err.Error())
+		t.FailNow()
 	}
 
-	err = addNodesToGraph(db)
+	tests := map[string]map[string]interface{}{
+		"create one node": {
+			"query": backend.Nodes{
+				"fc.1": backend.Properties{
+					"date_created": time.Now().Unix(),
+				},
+			},
+			"expected": "Create one node with two properties",
+			"driver": Driver{
+				Connection: db,
+				sid:        "Node",
+			},
+		},
+		"create two nodes": {
+			"query": backend.Nodes{
+				"fc.1": backend.Properties{
+					"date_created": time.Now().Unix(),
+				},
+				"fc.2": backend.Properties{
+					"date_created": time.Now().Unix(),
+				},
+			},
+			"expected": "Create two nodes with two properties each",
+			"driver": Driver{
+				Connection: db,
+				sid:        "Node",
+			},
+		},
+		"create existing node": {
+			"query": backend.Nodes{
+				"f1.1": backend.Properties{
+					"date_created": time.Now().Unix(),
+				},
+			},
+			"expected": "Create one node with two properties",
+			"driver": Driver{
+				Connection: db,
+				sid:        "Node",
+			},
+		},
+	}
+
+	for testName, test := range tests {
+		query := test["query"].(backend.Nodes)
+		driver := test["driver"].(Driver)
+		nodes, err := driver.CreateNodes(&query)
+		if err != nil {
+			t.Errorf("%s %s", testName, err.Error())
+			continue
+		}
+		if len(*nodes) != len(query) {
+			t.Errorf(test["expected"].(string))
+		}
+	}
+}
+
+func Test_AlterNodes(t *testing.T) {
+
+	db, err := setup()
 	if err != nil {
-		t.Errorf(err.Error())
-	}
-	driver := Driver{
-		Connection: db,
-		sid:        "test-source-id",
+		t.Error(err.Error())
+		t.FailNow()
 	}
 
-	oneNode := backend.Nodes{
-		"a": backend.Properties{
-			"nid":          "a",
-			"date_created": 1,
+	tests := map[string]map[string]interface{}{
+		"alter one node": {
+			"query": backend.Nodes{
+				"f0.1": backend.Properties{
+					"nid":          "f0.1",
+					"date_created": time.Now().Unix(),
+					"type":         "file",
+				},
+			},
+			"expected": "Create one node with two properties",
+			"driver": Driver{
+				Connection: db,
+				sid:        "Node",
+			},
+		},
+		"alter two nodes": {
+			"query": backend.Nodes{
+				"f1.1": backend.Properties{
+					"date_created": time.Now().Unix(),
+					"type":         "file",
+				},
+				"f2.1": backend.Properties{
+					"date_created": time.Now().Unix(),
+					"type":         "file",
+				},
+			},
+			"expected": "Create two nodes with two properties each",
+			"driver": Driver{
+				Connection: db,
+				sid:        "Node",
+			},
 		},
 	}
 
-	twoNode := backend.Nodes{
-		"b": backend.Properties{
-			"nid":          "b",
-			"date_created": 2,
-		},
-		"c": backend.Properties{
-			"nid":          "c",
-			"date_created": 3,
-		},
+	for testName, test := range tests {
+		query := test["query"].(backend.Nodes)
+		driver := test["driver"].(Driver)
+		nodes, err := driver.AlterNodes(&query)
+		if err != nil {
+			t.Errorf("%s %s", testName, err.Error())
+			continue
+		}
+		if len(*nodes) != len(query) {
+			t.Errorf(test["expected"].(string))
+		}
 	}
+}
 
-	oneManyNode := backend.Nodes{
-		"d": backend.Properties{
-			"nid":          "d",
-			"date_created": 4,
-			"prop1":        "p1",
-			"prop2":        1000,
-			"prop3":        "p3",
-		},
-	}
+func Test_GetEdges(t *testing.T) {
 
-	existingNode := backend.Nodes{
-		"a": backend.Properties{
-			"nid":          "a",
-			"date_created": 1,
-		},
-	}
-
-	resp, err := driver.CreateNodes(&oneNode)
-	if err != nil {
-		t.Errorf("Failed to create oneNode %s", err.Error())
-	}
-	if len(*resp) != 1 {
-		t.Errorf("Expected %d got %d nodes", len(oneNode), len(*resp))
-	}
-
-	resp, err = driver.CreateNodes(&twoNode)
-	if len(*resp) != 2 {
-		t.Errorf("Expected %d got %d nodes", len(twoNode), len(*resp))
-	}
-
-	resp, err = driver.CreateNodes(&oneManyNode)
-	if len(*resp) != 1 {
-		t.Errorf("Expected %d got %d nodes", len(oneManyNode), len(*resp))
-	}
-	if len((*resp)["d"]) != 5 {
-		t.Errorf("Expected %d got %d properties", len(oneManyNode["d"]), len((*resp)["d"]))
-	}
-
-	_ = "breakpoint"
-	resp, err = driver.CreateNodes(&existingNode)
-	if err != nil {
-		t.Errorf("%s", err.Error())
-	}
 }
