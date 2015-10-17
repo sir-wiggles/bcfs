@@ -314,27 +314,32 @@ func (d *Driver) GetOutEdges(edges *backend.Edges) (*backend.Edges, error) {
 	return nil, nil
 }
 
-// Get SingleEdge returns one edge that is between two nids
+// GetSingleEdge returns one edge that is between two nids
 func (d *Driver) GetSingleEdge(edges *backend.Edges) (*backend.Edges, error) {
 	return nil, nil
 }
 
+// CreateEdges creates edges with properties
 func (d *Driver) CreateEdges(edges *backend.Edges) (*backend.Edges, error) {
 	return nil, nil
 }
 
+// AlterEdges changes properties on edges with the given properties
 func (d *Driver) AlterEdges(edges *backend.Edges) (*backend.Edges, error) {
 	return nil, nil
 }
 
+// DeleteEdges removes edges from the graph
 func (d *Driver) DeleteEdges(edges *backend.Edges) error {
 	return nil
 }
 
+// GetPath returns a path with it's edeges given a series of nids
 func (d *Driver) GetPath(nodes *backend.Nodes) (*backend.Path, error) {
 	return nil, nil
 }
 
+// GetConnection gets a new connection to the db
 func (d *Driver) GetConnection() (*backend.Connection, error) {
 	return nil, nil
 }
