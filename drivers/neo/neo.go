@@ -3,6 +3,7 @@ package neo
 import (
 	"bytes"
 	"fmt"
+	"strconv"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/jmcvetta/neoism"
@@ -265,7 +266,56 @@ func (d *Driver) DeleteNodes(nodes *backend.Nodes) error {
 	return nil
 }
 
-func (d *Driver) GetEdges(edges *backend.Edges) (*backend.Edges, error) {
+// GetInEdges returns all edges that are pointing to a nid
+func (d *Driver) GetInEdges(edges *backend.Edges) (*backend.Edges, error) {
+
+	statements := make([]*neoism.CypherQuery, 0, len(*edges))
+	responses := make([]*[]neoResponse, 0, len(*edges))
+
+	for nid := range *edges {
+
+		r := &[]neoResponse{}
+		q := &neoism.CypherQuery{
+			Statement: fmt.Sprintf("MATCH ()-[n:ROOT*]->(m:`%s` {nid:'%s'}) RETURN n;", d.sid, nid),
+			Result:    r,
+		}
+
+		statements = append(statements, q)
+		responses = append(responses, r)
+		log.Debug(q)
+	}
+
+	tx, err := d.Connection.Begin(statements)
+	if err != nil {
+		log.Debugf("Begin Tx error: %s", err.Error())
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Debugf("Commit Tx error: %s", err.Error())
+		return nil, err
+	}
+
+	// Translate the nodes into a valid backend node
+	be := make(backend.Edges, len(*edges))
+	for i, r := range responses {
+		resp := (*r)[0].Data
+		if resp == nil {
+			continue
+		}
+		temp := strconv.Itoa(i)
+		be[temp] = resp
+	}
+	return &be, nil
+}
+
+// GetOutEdges returns all edges that are originating from a nid
+func (d *Driver) GetOutEdges(edges *backend.Edges) (*backend.Edges, error) {
+	return nil, nil
+}
+
+// Get SingleEdge returns one edge that is between two nids
+func (d *Driver) GetSingleEdge(edges *backend.Edges) (*backend.Edges, error) {
 	return nil, nil
 }
 

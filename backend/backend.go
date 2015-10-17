@@ -1,14 +1,13 @@
 package backend
 
-import (
-	"errors"
-	"fmt"
-)
+import "fmt"
 
-// This is the interface that will interact with the actual backend.
+// Graph is the interface that all drivers must implement
 type Graph interface {
 	GetNodes(*Nodes) (*Nodes, error)
-	GetEdges(*Edges) (*Edges, error)
+	GetInEdges(*Edges) (*Edges, error)
+	GetOutEdges(*Edges) (*Edges, error)
+	GetSingleEdge(*Edges) (*Edges, error)
 
 	CreateNodes(*Nodes) (*Nodes, error)
 	CreateEdges(*Edges) (*Edges, error)
@@ -25,22 +24,22 @@ type Graph interface {
 	Ping() error
 }
 
-// all drivers will have this type of function that will be registered to be used in creating a new driver
+// DriverInitializer is a signature that all drivers must have to register it's backen with the FS
 type DriverInitializer func(*Config) (Graph, error)
 
 var registry = make(map[string]DriverInitializer)
 
-// Adds a driver to the registered backedns.  This driver is not useable until it is pulled with GetBackend
+// RegisterBackend is the function from a driver to register that driver with the FS
 func RegisterBackend(name string, i DriverInitializer) {
 	registry[name] = i
 }
 
-// Pulls a driver from the registered drivers and initializes it with the config information from the config.
+// GetBackend returns a driver based on a config
 func GetBackend(cfg *Config) (Graph, error) {
 	// pull the driver out of the registered backends
 	factory, ok := registry[cfg.StringKey("name")]
 	if !ok {
-		return nil, errors.New(
+		return nil, fmt.Errorf(
 			fmt.Sprintf("A backend with the name \"%s\" has not been registered", cfg.StringKey("name")),
 		)
 	}
@@ -48,7 +47,7 @@ func GetBackend(cfg *Config) (Graph, error) {
 	// setup the driver with all the connections it will need to be useful.
 	graph, err := factory(cfg)
 	if err != nil {
-		return nil, errors.New(
+		return nil, fmt.Errorf(
 			fmt.Sprintf("Failed to initialize with error message %s", err.Error()),
 		)
 	}
