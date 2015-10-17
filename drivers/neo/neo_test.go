@@ -363,7 +363,7 @@ func Test_AlterNodes(t *testing.T) {
 	}
 }
 
-func Test_GetEdges(t *testing.T) {
+func Test_GetInEdges(t *testing.T) {
 
 	db, err := setup()
 	if err != nil {
@@ -388,6 +388,69 @@ func Test_GetEdges(t *testing.T) {
 				"d1": nil,
 			},
 			"check":  1,
+			"expect": "One edge should be returned.",
+			"driver": Driver{
+				Connection: db,
+				sid:        "Node",
+			},
+		},
+	}
+
+	for testName, test := range tests {
+		driver := test["driver"].(Driver)
+		query := test["query"].(backend.Edges)
+		check := test["check"].(int)
+		edges, err := driver.GetInEdges(&query)
+		if edges == nil {
+			t.Error("response should not be nil")
+			continue
+		}
+		if err != nil {
+			t.Errorf("%s %s", testName, err.Error())
+			continue
+		}
+		if len(*edges) != check {
+			t.Errorf("%s", test["expect"].(string))
+		}
+	}
+}
+
+func Test_GetOutEdges(t *testing.T) {
+
+	db, err := setup()
+	if err != nil {
+		t.Errorf(err.Error())
+		t.FailNow()
+	}
+
+	tests := map[string]map[string]interface{}{
+		"zero edges": map[string]interface{}{
+			"query": backend.Edges{
+				"f1.1": nil,
+			},
+			"check":  0,
+			"expect": "no edges should be returned.",
+			"driver": Driver{
+				Connection: db,
+				sid:        "Node",
+			},
+		},
+		"one edge": map[string]interface{}{
+			"query": backend.Edges{
+				"d1": nil,
+			},
+			"check":  1,
+			"expect": "One edge should be returned.",
+			"driver": Driver{
+				Connection: db,
+				sid:        "Node",
+			},
+		},
+		"three edges": map[string]interface{}{
+			"query": backend.Edges{
+				"root": nil,
+			},
+			"check":  3,
 			"expect": "One edge should be returned.",
 			"driver": Driver{
 				Connection: db,
