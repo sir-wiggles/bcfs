@@ -89,9 +89,8 @@ func main() {
 
 	log.SetLevel(cfg.LogLevel)
 
-	driver, err := backend.GetBackend(cfg.BackendConfig)
+	_, err = backend.GetBackend(cfg.BackendConfig)
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
-	log.Debug(driver.Ping())
 }

@@ -5,23 +5,23 @@ import "fmt"
 // Graph is the interface that all drivers must implement
 type Graph interface {
 	GetNodes(*Nodes) (*Nodes, error)
-	GetInEdges(*Edges) (*Edges, error)
-	GetOutEdges(*Edges) (*Edges, error)
-	GetSingleEdge(*Edges) (*Edges, error)
-
-	CreateNodes(*Nodes) (*Nodes, error)
-	CreateEdges(*Edges) (*Edges, error)
-
-	AlterNodes(*Nodes) (*Nodes, error)
-	AlterEdges(*Edges) (*Edges, error)
-
-	DeleteNodes(*Nodes) error
-	DeleteEdges(*Edges) error
-
-	GetPath(*Nodes) (*Path, error)
-
-	GetConnection() (*Connection, error)
-	Ping() error
+	//	GetInEdges(*Edges) (*Edges, error)
+	//	GetOutEdges(*Edges) (*Edges, error)
+	//	GetSingleEdge(*Edges) (*Edges, error)
+	//
+	//	CreateNodes(*Nodes) (*Nodes, error)
+	//	CreateEdges(*Edges) (*Edges, error)
+	//
+	//	AlterNodes(*Nodes) (*Nodes, error)
+	//	AlterEdges(*Edges) (*Edges, error)
+	//
+	//	DeleteNodes(*Nodes) error
+	//	DeleteEdges(*Edges) error
+	//
+	//	GetPath(*Nodes) (*Path, error)
+	//
+	//	GetConnection() (*Connection, error)
+	//	Ping() error
 }
 
 // DriverInitializer is a signature that all drivers must have to register it's backen with the FS

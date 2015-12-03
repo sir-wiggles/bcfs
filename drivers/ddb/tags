@@ -1,0 +1,29 @@
+!_TAG_FILE_FORMAT	2
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted/
+!_TAG_PROGRAM_AUTHOR	Joel Stemmer	/stemmertech@gmail.com/
+!_TAG_PROGRAM_NAME	gotags
+!_TAG_PROGRAM_URL	https://github.com/jstemmer/gotags
+!_TAG_PROGRAM_VERSION	1.3.0	/go1.5.1/
+EDGE_ATTR_NAME	ddb_test.go	23;"	v	access:public	line:23
+EDGE_GSI_REVERSE	ddb_test.go	25;"	v	access:public	line:25
+EDGE_HASH	ddb_test.go	21;"	v	access:public	line:21
+EDGE_LSI_NAME	ddb_test.go	24;"	v	access:public	line:24
+EDGE_RANGE	ddb_test.go	22;"	v	access:public	line:22
+EDGE_TABLE_NAME	ddb_test.go	20;"	v	access:public	line:20
+LOCAL_ENDPOINT	ddb_test.go	11;"	v	access:public	line:11
+LOCAL_KEY	ddb_test.go	14;"	v	access:public	line:14
+LOCAL_MAX_RETRIES	ddb_test.go	13;"	v	access:public	line:13
+LOCAL_REGION	ddb_test.go	12;"	v	access:public	line:12
+LOCAL_SECRET	ddb_test.go	15;"	v	access:public	line:15
+LOCAL_SESSION_TOKEN	ddb_test.go	16;"	v	access:public	line:16
+LOCAL_TIMEOUT	ddb_test.go	17;"	v	access:public	line:17
+NODE_ATTR_BLOCKLIST	ddb_test.go	31;"	v	access:public	line:31
+NODE_GSI_BLOCKLIST	ddb_test.go	32;"	v	access:public	line:32
+NODE_HASH	ddb_test.go	29;"	v	access:public	line:29
+NODE_RANGE	ddb_test.go	30;"	v	access:public	line:30
+NODE_TABLE_NAME	ddb_test.go	28;"	v	access:public	line:28
+Nodes	ddb_test.go	35;"	t	access:public	line:35	type:struct
+Test_GetNodes	ddb_test.go	37;"	f	access:public	line:37	signature:(t *testing.T)
+ddb	ddb_test.go	1;"	p	line:1
+github.com/aws/aws-sdk-go/aws	ddb_test.go	6;"	i	line:6
+testing	ddb_test.go	4;"	i	line:4
