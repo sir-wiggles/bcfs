@@ -1,3 +1,3 @@
 package backend
 
-type Nodes map[string]Properties
+type Nodes map[string]*Properties

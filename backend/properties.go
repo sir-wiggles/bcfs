@@ -4,13 +4,10 @@ import (
 	"fmt"
 )
 
-// representation of a node id which is a 32 hex char string
-type id string
-
-// The key value struct for nodes
+// Properties holdes the values of a node
 type Properties map[string]interface{}
 
-// helper method to get a string out of properties
+// StringKey pulls a string type out of Properties
 func (p Properties) StringKey(key string) (string, error) {
 	if val, ok := p[key]; ok {
 		switch vv := val.(type) {
@@ -23,7 +20,7 @@ func (p Properties) StringKey(key string) (string, error) {
 	return "", fmt.Errorf("No such key: %s", key)
 }
 
-// helper method to get an int out of properties
+// IntKey pulls an int out of Properties
 func (p Properties) IntKey(key string) (int, error) {
 	if val, ok := p[key]; ok {
 		switch vv := val.(type) {

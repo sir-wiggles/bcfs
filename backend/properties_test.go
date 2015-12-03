@@ -1,11 +1,9 @@
 package backend
 
-import (
-	"testing"
-)
+import "testing"
 
 func Test_StringKey(t *testing.T) {
-	props := properties{
+	props := Properties{
 		"str": "string a",
 	}
 

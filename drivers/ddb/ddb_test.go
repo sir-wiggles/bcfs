@@ -1,16 +1,18 @@
 package ddb
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/sir-wiggles/bcfs/backend"
 )
 
 var (
 	// Parameters for DDB Local
 	LOCAL_ENDPOINT      = aws.String("http://localhost:8000")
 	LOCAL_REGION        = aws.String("us-west-2")
-	LOCAL_MAX_RETRIES   = aws.Int(0)
+	LOCAL_MAX_RETRIES   = aws.Int(1)
 	LOCAL_KEY           = "key"
 	LOCAL_SECRET        = "secret"
 	LOCAL_SESSION_TOKEN = ""
@@ -32,31 +34,62 @@ var (
 	NODE_GSI_BLOCKLIST  = aws.String("sid_nid-blocklist_id-index")
 )
 
-type Nodes struct{}
-
 func Test_GetNodes(t *testing.T) {
 
-	_ = setup(t)
-	sid := "source_id"
+	env := setup(t)
+	sid := "__sid__"
 
 	type testCase struct {
 		nodesToAdd [][]string
-		input      *Nodes
-		output     *Nodes
+		input      *backend.Nodes
+		output     *backend.Nodes
+		driver     *Driver
 		err        error
 	}
 
 	tests := map[string]*testCase{
 		"get one node": &testCase{
-			nodesToAdd: [][]string{{sid, "1"}, {sid, "2"}, {sid, "3"}, {sid, "4"}, {sid, "5"}, {sid, "6"}, {sid, "7"}, {sid, "8"}, {sid, "9"}, {sid, "0"}},
-			input:      &Nodes{},
-			output:     &Nodes{},
-			err:        nil,
+			nodesToAdd: [][]string{
+				{sid, "1"}, {sid, "2"}, {sid, "3"},
+				{sid, "4"}, {sid, "5"}, {sid, "6"},
+				{sid, "7"}, {sid, "8"}, {sid, "9"},
+				{sid, "0"},
+			},
+			input: &backend.Nodes{
+				SOURCE_ID: &backend.Properties{
+					"nid": sid,
+				},
+				"1": &backend.Properties{
+					"nid": "1",
+				},
+			},
+			output: &backend.Nodes{
+				"1": &backend.Properties{
+					"sid":    sid,
+					"nid":    "1",
+					"string": "test",
+					"number": "0",
+					"bool":   "true",
+				},
+			},
+			driver: &Driver{
+				Connection:    env.db,
+				NodeTableName: *NODE_TABLE_NAME,
+			},
+			err: nil,
 		},
 	}
 
 	for testDescription, testCase := range tests {
-		t.Log(testDescription)
-		t.Log(testCase)
+		env.addNodesToDB(testCase.nodesToAdd)
+
+		resp, err := testCase.driver.GetNodes(testCase.input)
+		if err != testCase.err {
+			t.Errorf("%s error missmatch: %s", testDescription, err.Error())
+			continue
+		}
+		if reflect.DeepEqual(resp, testCase.output) {
+			t.Errorf("%s expected\n%s\ngot\n%s", testCase.output, resp)
+		}
 	}
 }

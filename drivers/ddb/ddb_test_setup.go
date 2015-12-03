@@ -45,10 +45,11 @@ func getDynamodbConnection(t *testing.T) *dynamodb.DynamoDB {
 		},
 	})
 
-	_, err := db.ListTables(&dynamodb.ListTablesInput{})
+	resp, err := db.ListTables(&dynamodb.ListTablesInput{})
 	if err != nil {
 		t.Logf("dynamodb connection: %s", err.Error())
 		t.FailNow()
 	}
+	t.Log(resp)
 	return db
 }
