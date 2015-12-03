@@ -1,6 +1,7 @@
 package ddb
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -70,14 +71,15 @@ func createNodeTable(t *testing.T, db *dynamodb.DynamoDB) {
 func (e *env) addNodesToDB(items [][]string) {
 
 	for _, item := range items {
+		hash := fmt.Sprintf("%s:%s", item[0], item[1])
 		_, err := e.db.PutItem(&dynamodb.PutItemInput{
 			TableName: NODE_TABLE_NAME,
 			Item: map[string]*dynamodb.AttributeValue{
-				*NODE_HASH:  &dynamodb.AttributeValue{S: aws.String(item[0])},
+				*NODE_HASH:  &dynamodb.AttributeValue{S: aws.String(hash)},
 				*NODE_RANGE: &dynamodb.AttributeValue{S: aws.String(item[1])},
 				"string":    &dynamodb.AttributeValue{S: aws.String("test")},
 				"number":    &dynamodb.AttributeValue{N: aws.String("0")},
-				"bool":      &dynamodb.AttributeValue{BOOL: aws.Bool(true)},
+				"bool":      &dynamodb.AttributeValue{N: aws.String("1")},
 			},
 		})
 		if err != nil {

@@ -3,6 +3,7 @@ package ddb
 import (
 	"fmt"
 	"log"
+	"reflect"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -30,14 +31,9 @@ func newDriver(c *backend.Config) (backend.Graph, error) {
 	return &Driver{}, nil
 }
 
-func (d *Driver) Ping() string {
-	return "From " + PACKAGE_NAME
-}
-
 // Given a list of node ids return all the nodes and their properties
 func (d *Driver) GetNodes(nodes *backend.Nodes) (*backend.Nodes, error) {
 
-	keys := make([]map[string]*dynamodb.AttributeValue, 0, len(*nodes))
 	sn, ok := (*nodes)[SOURCE_ID]
 	if !ok {
 		return nil, fmt.Errorf("driver: missing source id in request")
@@ -47,6 +43,9 @@ func (d *Driver) GetNodes(nodes *backend.Nodes) (*backend.Nodes, error) {
 		return nil, fmt.Errorf("driver: %s", err.Error())
 	}
 
+	keys := make([]map[string]*dynamodb.AttributeValue, 0, 100)
+	items := make([]map[string]*dynamodb.AttributeValue, 0, len(*nodes))
+	subSet := make([]map[string]*dynamodb.AttributeValue, 0, 100)
 	for nid, _ := range *nodes {
 		if nid == SOURCE_ID {
 			continue
@@ -57,16 +56,72 @@ func (d *Driver) GetNodes(nodes *backend.Nodes) (*backend.Nodes, error) {
 			*NODE_RANGE: &dynamodb.AttributeValue{S: aws.String(nid)},
 		}
 		keys = append(keys, key)
+		if len(keys) == 100 {
+			subSet, err = d.batchGet(keys)
+			if err != nil {
+				return nil, err
+			}
+			keys = make([]map[string]*dynamodb.AttributeValue, 0, 100)
+			items = append(items, subSet...)
+		}
 	}
-	fmt.Println(keys)
-
-	items, err := d.batchGet(keys)
+	if len(keys) > 0 {
+		subSet, err = d.batchGet(keys)
+	}
 	if err != nil {
-
+		return nil, err
 	}
-	fmt.Println(items)
+	items = append(items, subSet...)
 
-	return nil, nil
+	for _, item := range items {
+		node := nodes.GetNodeByID(*item["nid"].S)
+		for key, value := range item {
+			field := getFieldOfInterest(value)
+			switch field {
+			case "S":
+				node.SetString(key, *value.S)
+			case "B":
+				node.SetBinary(key, value.B)
+			case "N":
+				node.SetNumber(key, *value.N)
+			// this should be ok given we only use the above three fields
+			// boto puts bools up to dynamo as numbers :D
+			case "BOOL", "BS", "L", "M", "NS", "NULL", "SS":
+				return nil, fmt.Errorf("dynamodb type %s is not implemented", field)
+			case "":
+				return nil, fmt.Errorf("no field found for %s", node)
+			}
+		}
+	}
+	return nodes, nil
+}
+
+func getFieldOfInterest(item *dynamodb.AttributeValue) string {
+	v := reflect.ValueOf(item).Elem()
+	t := v.Type()
+	n := t.NumField()
+
+	for i := 0; i < n; i++ {
+		f := v.Field(i)
+		switch f.Kind() {
+		case reflect.Ptr:
+			if f.IsNil() {
+				continue
+			}
+		case reflect.Struct:
+			continue
+		case reflect.Slice, reflect.Map:
+			if reflect.ValueOf(f.Interface()).Len() == 0 {
+				continue
+			}
+		case reflect.Bool:
+			if f.IsNil() {
+				continue
+			}
+		}
+		return reflect.Indirect(reflect.ValueOf(item)).Type().Field(i).Name
+	}
+	return ""
 }
 
 func (d *Driver) batchGet(keys []map[string]*dynamodb.AttributeValue) ([]map[string]*dynamodb.AttributeValue, error) {
@@ -81,14 +136,18 @@ func (d *Driver) batchGet(keys []map[string]*dynamodb.AttributeValue) ([]map[str
 				},
 			},
 		})
-		fmt.Println(resp)
 		if err != nil {
 			log.Printf("batchGet: %s", err.Error())
 			continue
 		}
+		items = append(items, resp.Responses[d.NodeTableName]...)
+
+		// If we have no unprocessed items then we're good
 		if _, ok := resp.UnprocessedKeys[d.NodeTableName]; !ok {
 			break
 		}
+
+		// handle the unprocessed items
 		keys = resp.UnprocessedKeys[d.NodeTableName].Keys
 	}
 	return items, nil

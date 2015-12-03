@@ -32,3 +32,20 @@ func (p Properties) IntKey(key string) (int, error) {
 	}
 	return 0, fmt.Errorf("No such key: %s", key)
 }
+
+func (p *Properties) SetKey(key string, value interface{}) {
+	(*p)[key] = value
+}
+
+func (p *Properties) SetString(key string, value string) {
+	(*p)[key] = value
+}
+
+// dynamo lib handles numbers as strings because why not
+func (p *Properties) SetNumber(key string, value string) {
+	(*p)[key] = value
+}
+
+func (p *Properties) SetBinary(key string, value []byte) {
+	(*p)[key] = value
+}
