@@ -7,8 +7,17 @@ import (
 // Properties holdes the values of a node
 type Properties map[string]interface{}
 
-// StringKey pulls a string type out of Properties
-func (p Properties) StringKey(key string) (string, error) {
+type Propertyers interface {
+	GetString(string) (string, error)
+	GetInt(string) (int, error)
+	SetKey(string, interface{})
+	SetString(string, string)
+	SetNumber(string, string)
+	SetBinary(string, []byte)
+}
+
+// GetString pulls a string type out of Properties
+func (p Properties) GetString(key string) (string, error) {
 	if val, ok := p[key]; ok {
 		switch vv := val.(type) {
 		case string:
@@ -20,8 +29,8 @@ func (p Properties) StringKey(key string) (string, error) {
 	return "", fmt.Errorf("No such key: %s", key)
 }
 
-// IntKey pulls an int out of Properties
-func (p Properties) IntKey(key string) (int, error) {
+// GetInt pulls an int out of Properties
+func (p Properties) GetInt(key string) (int, error) {
 	if val, ok := p[key]; ok {
 		switch vv := val.(type) {
 		case int64:
@@ -41,7 +50,6 @@ func (p *Properties) SetString(key string, value string) {
 	(*p)[key] = value
 }
 
-// dynamo lib handles numbers as strings because why not
 func (p *Properties) SetNumber(key string, value string) {
 	(*p)[key] = value
 }
