@@ -1,11 +1,9 @@
 package ddb
 
 import (
-	"fmt"
 	"log"
 	"reflect"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/sir-wiggles/bcfs/backend"
 )
@@ -30,63 +28,6 @@ type Driver struct {
 
 func newDriver(c *backend.Config) (backend.Graph, error) {
 	return &Driver{}, nil
-}
-
-// Given a list of node ids return all the nodes and their properties
-func (d *Driver) GetNodes(sid string, nodes *backend.Nodes) error {
-
-	var err error
-	keys := make([]map[string]*dynamodb.AttributeValue, 0, 100)
-	items := make([]map[string]*dynamodb.AttributeValue, 0, len(*nodes))
-	subSet := make([]map[string]*dynamodb.AttributeValue, 0, 100)
-	for nid, _ := range *nodes {
-		if nid == SOURCE_ID {
-			continue
-		}
-		hash := aws.String(fmt.Sprintf("%s:%s", sid, nid))
-		key := map[string]*dynamodb.AttributeValue{
-			*NODE_HASH:  &dynamodb.AttributeValue{S: hash},
-			*NODE_RANGE: &dynamodb.AttributeValue{S: aws.String(nid)},
-		}
-		keys = append(keys, key)
-		if len(keys) == 100 {
-			subSet, err = d.batchGet(d.NodeTableName, keys)
-			if err != nil {
-				return err
-			}
-			keys = make([]map[string]*dynamodb.AttributeValue, 0, 100)
-			items = append(items, subSet...)
-		}
-	}
-	if len(keys) > 0 {
-		subSet, err = d.batchGet(d.NodeTableName, keys)
-	}
-	if err != nil {
-		return err
-	}
-	items = append(items, subSet...)
-
-	for _, item := range items {
-		node := nodes.GetNodeByID(*item["nid"].S)
-		for key, value := range item {
-			field := getFieldOfInterest(value)
-			switch field {
-			case "S":
-				node.SetString(key, *value.S)
-			case "B":
-				node.SetBinary(key, value.B)
-			case "N":
-				node.SetNumber(key, *value.N)
-			// this should be ok given we only use the above three fields
-			// boto puts bools up to dynamo as numbers :D
-			case "BOOL", "BS", "L", "M", "NS", "NULL", "SS":
-				return fmt.Errorf("dynamodb type %s is not implemented", field)
-			case "":
-				return fmt.Errorf("no field found for %s", node)
-			}
-		}
-	}
-	return nil
 }
 
 func getFieldOfInterest(item *dynamodb.AttributeValue) string {

@@ -1,16 +1,12 @@
 package backend
 
 // Nodes maps a nid to it's properties. Used both in the request and the response
-type Nodes map[string]*Node
+type Nodes map[string]*Properties
 
-type Node struct {
-	*Properties
-}
-
-func (n *Nodes) GetNodeByID(id string) *Node {
+func (n *Nodes) GetNodeByID(id string) *Properties {
 	node := (*n)[id]
 	if node == nil {
-		node = &Node{&Properties{}}
+		node = &Properties{}
 		(*n)[id] = node
 	}
 	return node

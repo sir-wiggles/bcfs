@@ -4,33 +4,11 @@
 !_TAG_PROGRAM_NAME	gotags
 !_TAG_PROGRAM_URL	https://github.com/jstemmer/gotags
 !_TAG_PROGRAM_VERSION	1.3.0	/go1.5.1/
-EDGE_ATTR_NAME	ddb_test.go	30;"	v	access:public	line:30
-EDGE_GSI_REVERSE	ddb_test.go	32;"	v	access:public	line:32
-EDGE_HASH	ddb_test.go	28;"	v	access:public	line:28
-EDGE_LSI_NAME	ddb_test.go	31;"	v	access:public	line:31
-EDGE_RANGE	ddb_test.go	29;"	v	access:public	line:29
-EDGE_TABLE_NAME	ddb_test.go	27;"	v	access:public	line:27
-LOCAL_ENDPOINT	ddb_test.go	18;"	v	access:public	line:18
-LOCAL_KEY	ddb_test.go	21;"	v	access:public	line:21
-LOCAL_MAX_RETRIES	ddb_test.go	20;"	v	access:public	line:20
-LOCAL_REGION	ddb_test.go	19;"	v	access:public	line:19
-LOCAL_SECRET	ddb_test.go	22;"	v	access:public	line:22
-LOCAL_SESSION_TOKEN	ddb_test.go	23;"	v	access:public	line:23
-LOCAL_TIMEOUT	ddb_test.go	24;"	v	access:public	line:24
-NODE_ATTR_BLOCKLIST	ddb_test.go	38;"	v	access:public	line:38
-NODE_GSI_BLOCKLIST	ddb_test.go	39;"	v	access:public	line:39
-NODE_HASH	ddb_test.go	36;"	v	access:public	line:36
-NODE_RANGE	ddb_test.go	37;"	v	access:public	line:37
-NODE_TABLE_NAME	ddb_test.go	35;"	v	access:public	line:35
-Test_GetNodes	ddb_test.go	51;"	f	access:public	line:51	signature:(t *testing.T)
-ddb	ddb_test.go	1;"	p	line:1
-encoding/hex	ddb_test.go	4;"	i	line:4
-fmt	ddb_test.go	5;"	i	line:5
-github.com/aws/aws-sdk-go/aws	ddb_test.go	11;"	i	line:11
-github.com/davecgh/go-spew/spew	ddb_test.go	12;"	i	line:12
-github.com/sir-wiggles/bcfs/backend	ddb_test.go	13;"	i	line:13
-math/rand	ddb_test.go	6;"	i	line:6
-newSid	ddb_test.go	42;"	f	access:private	line:42	signature:()	type:string
-reflect	ddb_test.go	7;"	i	line:7
-testing	ddb_test.go	8;"	i	line:8
-testing/quick	ddb_test.go	9;"	i	line:9
+GetInEdges	edge.go	12;"	m	access:public	ctype:Driver	line:12	signature:(sid string, edges *backend.Edges)	type:error
+GetOutEdges	edge.go	15;"	m	access:public	ctype:Driver	line:15	signature:(sid string, edges *backend.Edges)	type:error
+ddb	edge.go	1;"	p	line:1
+fmt	edge.go	4;"	i	line:4
+github.com/aws/aws-sdk-go/aws	edge.go	7;"	i	line:7
+github.com/aws/aws-sdk-go/service/dynamodb	edge.go	8;"	i	line:8
+github.com/sir-wiggles/bcfs/backend	edge.go	9;"	i	line:9
+strings	edge.go	5;"	i	line:5
