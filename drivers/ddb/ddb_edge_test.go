@@ -98,9 +98,7 @@ func (e *env) addEdgesToDB(items [][]string) {
 			Item: map[string]*dynamodb.AttributeValue{
 				*EDGE_HASH:  &dynamodb.AttributeValue{S: aws.String(item[0])},
 				*EDGE_RANGE: &dynamodb.AttributeValue{S: aws.String(item[1])},
-				"string":    &dynamodb.AttributeValue{S: aws.String("test")},
-				"number":    &dynamodb.AttributeValue{N: aws.String("0")},
-				"bool":      &dynamodb.AttributeValue{BOOL: aws.Bool(true)},
+				"name":      &dynamodb.AttributeValue{S: aws.String("foo")},
 			},
 		})
 		if err != nil {

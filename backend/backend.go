@@ -4,16 +4,16 @@ import "fmt"
 
 // Graph is the interface that all drivers must implement
 type Graph interface {
-	GetNodes(string, *Nodes) error
-	//	GetInEdges(*Edges) (*Edges, error)
-	GetOutEdges(string, *Edges) error
-	//	GetSingleEdge(*Edges) (*Edges, error)
+	GetNodes(*Nodes) error
+	GetInEdges(*Edges) error
+	GetOutEdges(*Edges) error
+	//	GetSingleEdge(*Edges) error
 	//
-	//	CreateNodes(*Nodes) (*Nodes, error)
-	//	CreateEdges(*Edges) (*Edges, error)
+	CreateNodes(*Nodes) error
+	//	CreateEdges(*Edges) error
 	//
-	//	AlterNodes(*Nodes) (*Nodes, error)
-	//	AlterEdges(*Edges) (*Edges, error)
+	//	AlterNodes(*Nodes) error
+	//	AlterEdges(*Edges) error
 	//
 	//	DeleteNodes(*Nodes) error
 	//	DeleteEdges(*Edges) error

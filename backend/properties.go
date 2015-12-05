@@ -4,8 +4,21 @@ import (
 	"fmt"
 )
 
+type PropertyType int
+
+const (
+	StringProperty PropertyType = iota
+	NumberProperty
+	BinaryProperty
+)
+
+type Property struct {
+	Type  PropertyType
+	Value interface{}
+}
+
 // Properties holdes the values of a node
-type Properties map[string]interface{}
+type Properties map[string]*Property
 
 type Propertyers interface {
 	GetString(string) (string, error)
@@ -18,12 +31,12 @@ type Propertyers interface {
 
 // GetString pulls a string type out of Properties
 func (p Properties) GetString(key string) (string, error) {
-	if val, ok := p[key]; ok {
-		switch vv := val.(type) {
-		case string:
-			return vv, nil
+	if property, ok := p[key]; ok {
+		switch property.Type {
+		case StringProperty:
+			return property.Value.(string), nil
 		default:
-			return "", fmt.Errorf("Invalid %s parameter type: %T", key, val)
+			return "", fmt.Errorf("Invalid %s parameter type: %T", key, property)
 		}
 	}
 	return "", fmt.Errorf("No such key: %s", key)
@@ -31,29 +44,29 @@ func (p Properties) GetString(key string) (string, error) {
 
 // GetInt pulls an int out of Properties
 func (p Properties) GetInt(key string) (int, error) {
-	if val, ok := p[key]; ok {
-		switch vv := val.(type) {
-		case int64:
-			return int(vv), nil
+	if property, ok := p[key]; ok {
+		switch property.Type {
+		case NumberProperty:
+			return property.Value.(int), nil
 		default:
-			return 0, fmt.Errorf("Invalid %s parameter type: %T", key, val)
+			return 0, fmt.Errorf("Invalid %s parameter type: %T", key, property)
 		}
 	}
 	return 0, fmt.Errorf("No such key: %s", key)
 }
 
 func (p *Properties) SetKey(key string, value interface{}) {
-	(*p)[key] = value
+	(*p)[key] = &Property{StringProperty, value}
 }
 
 func (p *Properties) SetString(key string, value string) {
-	(*p)[key] = value
+	(*p)[key] = &Property{StringProperty, value}
 }
 
 func (p *Properties) SetNumber(key string, value string) {
-	(*p)[key] = value
+	(*p)[key] = &Property{NumberProperty, value}
 }
 
 func (p *Properties) SetBinary(key string, value []byte) {
-	(*p)[key] = value
+	(*p)[key] = &Property{BinaryProperty, value}
 }

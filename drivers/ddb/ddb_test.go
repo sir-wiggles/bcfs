@@ -105,6 +105,7 @@ func Test_GetNodes(t *testing.T) {
 			driver: &Driver{
 				Connection:    env.db,
 				NodeTableName: *NODE_TABLE_NAME,
+				SourceID:      sid,
 			},
 			err: nil,
 		},
@@ -137,6 +138,7 @@ func Test_GetNodes(t *testing.T) {
 			driver: &Driver{
 				Connection:    env.db,
 				NodeTableName: *NODE_TABLE_NAME,
+				SourceID:      sid2,
 			},
 			err: nil,
 		},
@@ -147,6 +149,7 @@ func Test_GetNodes(t *testing.T) {
 			driver: &Driver{
 				Connection:    env.db,
 				NodeTableName: *NODE_TABLE_NAME,
+				SourceID:      sid3,
 			},
 			err: nil,
 		},
@@ -165,6 +168,7 @@ func Test_GetNodes(t *testing.T) {
 			driver: &Driver{
 				Connection:    env.db,
 				NodeTableName: *NODE_TABLE_NAME,
+				SourceID:      sid4,
 			},
 			err: nil,
 		},
@@ -191,6 +195,7 @@ func Test_GetNodes(t *testing.T) {
 			driver: &Driver{
 				Connection:    env.db,
 				NodeTableName: *NODE_TABLE_NAME,
+				SourceID:      sid5,
 			},
 			err: nil,
 		},

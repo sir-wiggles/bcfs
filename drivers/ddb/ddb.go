@@ -22,6 +22,7 @@ func init() {
 
 type Driver struct {
 	Connection    *dynamodb.DynamoDB
+	SourceID      string
 	NodeTableName string
 	EdgeTableName string
 }
