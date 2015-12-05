@@ -6,6 +6,7 @@
 !_TAG_PROGRAM_VERSION	1.3.0	/go1.5.1/
 CreateNodes	node.go	66;"	m	access:public	ctype:Driver	line:66	signature:(nodes *backend.Nodes)	type:error
 GetNodes	node.go	12;"	m	access:public	ctype:Driver	line:12	signature:(nodes *backend.Nodes)	type:error
+batchWrite	node.go	93;"	m	access:private	ctype:Driver	line:93	signature:(items []map[string]*dynamodb.AttributeValue)	type:error
 ddb	node.go	1;"	p	line:1
 fmt	node.go	4;"	i	line:4
 github.com/aws/aws-sdk-go/aws	node.go	6;"	i	line:6

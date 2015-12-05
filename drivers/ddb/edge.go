@@ -18,7 +18,7 @@ func (d *Driver) GetInEdges(edges *backend.Edges) error {
 		hash := aws.String(fmt.Sprintf("%s:%s", sid, id))
 		key := &dynamodb.QueryInput{
 			TableName: aws.String(d.EdgeTableName),
-			IndexName: aws.String("sid_to-sid_from-index"),
+			IndexName: EDGE_GSI_REVERSE,
 			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 				*EDGE_RANGE: aws.String(hash),
 			},
@@ -27,6 +27,29 @@ func (d *Driver) GetInEdges(edges *backend.Edges) error {
 		resp := d.query(key)
 		items = append(items, resp...)
 	}
+	for _, item := range items {
+		sid_fid := *item[*EDGE_HASH].S
+		sid_tid := *item[*EDGE_RANGE].S
+		fid := strings.Split(sid_fid, ":")[1]
+		tid := strings.Split(sid_tid, ":")[1]
+		edge := edges.GetEdgeByID(tid, fid)
+		for key, value := range item {
+			field := getFieldOfInterest(value)
+			switch field {
+			case "S":
+				edge.SetString(key, *value.S)
+			case "B":
+				edge.SetBinary(key, value.B)
+			case "N":
+				edge.SetNumber(key, *value.N)
+			case "BOOL", "BS", "L", "M", "NS", "NULL", "SS":
+				return fmt.Errorf("dynamodb type %s is not implemented", field)
+			case "":
+				return fmt.Errorf("no field found for %s", edge)
+			}
+		}
+	}
+	return nil
 }
 
 func (d *Driver) query(key *dynamodb.QueryInput) []map[string]*dynamodb.AttributeValue {
@@ -60,8 +83,7 @@ func (d *Driver) GetOutEdges(edges *backend.Edges) error {
 		for tid, _ := range tos {
 			rang := aws.String(fmt.Sprintf("%s:%s", sid, tid))
 			key := map[string]*dynamodb.AttributeValue{
-				*EDGE_HASH:  &dynamodb.AttributeValue{S: hash},
-				*EDGE_RANGE: &dynamodb.AttributeValue{S: rang},
+				*EDGE_HASH: &dynamodb.AttributeValue{S: hash},
 			}
 			keys = append(keys, key)
 			if len(keys) == 100 {

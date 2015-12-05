@@ -4,6 +4,7 @@ import (
 	"log"
 	"reflect"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/sir-wiggles/bcfs/backend"
 )
@@ -13,6 +14,21 @@ var (
 
 	SOURCE_ID = "source_id"
 	NODE_ID   = "nid"
+
+	// Edge table parameters
+	EDGE_TABLE_NAME  = aws.String("fs-edge")
+	EDGE_HASH        = aws.String("sid_from")
+	EDGE_RANGE       = aws.String("sid_to")
+	EDGE_ATTR_NAME   = aws.String("name")
+	EDGE_LSI_NAME    = aws.String("name-index")
+	EDGE_GSI_REVERSE = aws.String("sid_to-sid_from-index")
+
+	// Node table parameters
+	NODE_TABLE_NAME     = aws.String("fs-node")
+	NODE_HASH           = aws.String("sid_nid")
+	NODE_RANGE          = aws.String("nid")
+	NODE_ATTR_BLOCKLIST = aws.String("blocklist_id")
+	NODE_GSI_BLOCKLIST  = aws.String("sid_nid-blocklist_id-index")
 )
 
 func init() {

@@ -65,7 +65,7 @@ func (d *Driver) GetNodes(nodes *backend.Nodes) error {
 
 func (d *Driver) CreateNodes(nodes *backend.Nodes) error {
 
-	items := make([]map[string]*dynamodb.AttributeValue, 0, len(*nodes))
+	items := make([]*dynamodb.WriteRequest, 0, len(*nodes))
 	for nid, properties := range *nodes {
 
 		item := make(map[string]*dynamodb.AttributeValue, 0, len(properties))
@@ -82,17 +82,19 @@ func (d *Driver) CreateNodes(nodes *backend.Nodes) error {
 				item[key] = &dynamodb.AttributeValue{N: aws.String(value)}
 			}
 		}
-		items = append(items, item)
 
-		key := &dynamodb.BatchWriteItemInput{
-			RequestItems: map[string][]*dynamodb.WriteRequest{
-				d.NodeTableName: []*dynamodb.WriteRequest{
-					&dynamodb.WriteRequest{
-						PutRequest: &dynamodb.PutRequest{},
-					},
-				},
-			},
-		}
+		write := dynamodb.WriteRequest{PutRequest: &dynamodb.PutRequest{Item: item}}
+		items = append(items, write)
+
 	}
 	return nil
+}
+
+func (d *Driver) batchWrite(items []map[string]*dynamodb.AttributeValue) error {
+
+	input := &dynamodb.BatchWriteItemInput{
+		RequestItems: map[string][]*dynamodb.WriteRequest{
+			d.NodeTableName: items,
+		},
+	}
 }
