@@ -2,6 +2,7 @@ package ddb
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -65,7 +66,7 @@ func (d *Driver) GetNodes(nodes *backend.Nodes) error {
 
 func (d *Driver) CreateNodes(nodes *backend.Nodes) error {
 
-	items := make([]*dynamodb.WriteRequest, 0, len(*nodes))
+	items := make([]*dynamodb.WriteRequest, 0, 25)
 	for nid, properties := range *nodes {
 
 		item := make(map[string]*dynamodb.AttributeValue, 0, len(properties))
@@ -82,19 +83,31 @@ func (d *Driver) CreateNodes(nodes *backend.Nodes) error {
 				item[key] = &dynamodb.AttributeValue{N: aws.String(value)}
 			}
 		}
-
-		write := dynamodb.WriteRequest{PutRequest: &dynamodb.PutRequest{Item: item}}
-		items = append(items, write)
-
+		items = append(items, dynamodb.WriteRequest{PutRequest: &dynamodb.PutRequest{Item: item}})
 	}
 	return nil
 }
 
-func (d *Driver) batchWrite(items []map[string]*dynamodb.AttributeValue) error {
+func (d *Driver) batchWrite(items []*dynamodb.WriteRequest) error {
 
-	input := &dynamodb.BatchWriteItemInput{
-		RequestItems: map[string][]*dynamodb.WriteRequest{
-			d.NodeTableName: items,
-		},
+	batch := make([]*dynamodb.WriteRequest, 0, 25)
+	for _, item := range items {
+		batch = append()
+	}
+
+	for {
+
+		resp, err := d.Connection.BatchWriteItem(&dynamodb.BatchWriteItemInput{
+			RequestItems: map[string][]*dynamodb.WriteRequest{
+				d.NodeTableName: items,
+			}},
+		)
+		if err != nil {
+			log.Println(err.Error())
+			return err
+		}
+		if resp.UnprocessedItems == nil {
+			break
+		}
 	}
 }
