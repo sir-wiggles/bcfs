@@ -2,7 +2,6 @@ package ddb
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -67,6 +66,7 @@ func (d *Driver) GetNodes(nodes *backend.Nodes) error {
 func (d *Driver) CreateNodes(nodes *backend.Nodes) error {
 
 	items := make([]*dynamodb.WriteRequest, 0, 25)
+	groups := make([]map[string][]*dynamodb.BatchWriteItemInput, 0, 1)
 	for nid, properties := range *nodes {
 
 		item := make(map[string]*dynamodb.AttributeValue, 0, len(properties))
@@ -84,30 +84,24 @@ func (d *Driver) CreateNodes(nodes *backend.Nodes) error {
 			}
 		}
 		items = append(items, dynamodb.WriteRequest{PutRequest: &dynamodb.PutRequest{Item: item}})
+		if len(items) == 25 {
+			groups = append(groups, map[string]*dynamodb.BatchWriteItemInput{d.NodeTableName: items})
+			items = make([]*dynamodb.WriteRequest, 0, 25)
+		}
 	}
-	return nil
+	if len(items) > 0 {
+		groups = append(groups, items)
+	}
+	err := d.batchWrite(groups)
+	return err
 }
 
-func (d *Driver) batchWrite(items []*dynamodb.WriteRequest) error {
+func (d *Driver) AlterNodes(nodes *backend.Nodes) error {
 
-	batch := make([]*dynamodb.WriteRequest, 0, 25)
-	for _, item := range items {
-		batch = append()
+	items := make([]*dynamodb.WriteRequest, 0, 25)
+	for nid, properties := range *nodes {
+
+		d.Connection.UpdateItem(&dynamodb.UpdateItemInput{})
 	}
-
-	for {
-
-		resp, err := d.Connection.BatchWriteItem(&dynamodb.BatchWriteItemInput{
-			RequestItems: map[string][]*dynamodb.WriteRequest{
-				d.NodeTableName: items,
-			}},
-		)
-		if err != nil {
-			log.Println(err.Error())
-			return err
-		}
-		if resp.UnprocessedItems == nil {
-			break
-		}
-	}
+	return nil
 }

@@ -75,31 +75,13 @@ func getFieldOfInterest(item *dynamodb.AttributeValue) string {
 	return ""
 }
 
-func (d *Driver) batchGet(table string, keys []map[string]*dynamodb.AttributeValue) ([]map[string]*dynamodb.AttributeValue, error) {
-
-	items := make([]map[string]*dynamodb.AttributeValue, 0, len(keys))
+func (d Driver) send(sender func(interface{}) (interface{}, interface{}), request interface{}) (interface{}, interface{}) {
 	for {
-
-		resp, err := d.Connection.BatchGetItem(&dynamodb.BatchGetItemInput{
-			RequestItems: map[string]*dynamodb.KeysAndAttributes{
-				table: &dynamodb.KeysAndAttributes{
-					Keys: keys,
-				},
-			},
-		})
+		resp, err := sender(request)
 		if err != nil {
-			log.Printf("batchGet: %s", err.Error())
-			continue
+			// TODO: handle various ddb error codes
+			return nil, err
 		}
-		items = append(items, resp.Responses[table]...)
-
-		// If we have no unprocessed items then we're good
-		if _, ok := resp.UnprocessedKeys[table]; !ok {
-			break
-		}
-
-		// handle the unprocessed items
-		keys = resp.UnprocessedKeys[table].Keys
+		return resp, nil
 	}
-	return items, nil
 }

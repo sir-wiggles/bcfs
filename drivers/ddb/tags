@@ -4,12 +4,11 @@
 !_TAG_PROGRAM_NAME	gotags
 !_TAG_PROGRAM_URL	https://github.com/jstemmer/gotags
 !_TAG_PROGRAM_VERSION	1.3.0	/go1.5.1/
-CreateNodes	node.go	67;"	m	access:public	ctype:Driver	line:67	signature:(nodes *backend.Nodes)	type:error
-GetNodes	node.go	13;"	m	access:public	ctype:Driver	line:13	signature:(nodes *backend.Nodes)	type:error
-batchWrite	node.go	91;"	m	access:private	ctype:Driver	line:91	signature:(items []*dynamodb.WriteRequest)	type:error
+AlterNodes	node.go	99;"	m	access:public	ctype:Driver	line:99	signature:(nodes *backend.Nodes)	type:error
+CreateNodes	node.go	66;"	m	access:public	ctype:Driver	line:66	signature:(nodes *backend.Nodes)	type:error
+GetNodes	node.go	12;"	m	access:public	ctype:Driver	line:12	signature:(nodes *backend.Nodes)	type:error
 ddb	node.go	1;"	p	line:1
 fmt	node.go	4;"	i	line:4
-github.com/aws/aws-sdk-go/aws	node.go	7;"	i	line:7
-github.com/aws/aws-sdk-go/service/dynamodb	node.go	8;"	i	line:8
-github.com/sir-wiggles/bcfs/backend	node.go	9;"	i	line:9
-log	node.go	5;"	i	line:5
+github.com/aws/aws-sdk-go/aws	node.go	6;"	i	line:6
+github.com/aws/aws-sdk-go/service/dynamodb	node.go	7;"	i	line:7
+github.com/sir-wiggles/bcfs/backend	node.go	8;"	i	line:8
